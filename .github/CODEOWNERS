@@ -1,0 +1,25 @@
+# RepoMentor Code Ownership
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# Global maintainers
+*                   @your-org/repomentor-maintainers
+
+# Frontend Next.js app
+/apps/web/          @your-org/frontend-maintainers
+
+# API Gateway & Worker
+/apps/api/          @your-org/backend-maintainers
+/apps/worker/       @your-org/backend-maintainers
+
+# Core domain logic (RAG, AST, Memory, Providers)
+/packages/core/     @your-org/core-maintainers
+
+# Database schemas & migrations
+/packages/db/       @your-org/backend-maintainers
+
+# Documentation & AI Agent Rules
+/docs/              @your-org/docs-maintainers
+/AGENTS.md          @your-org/core-maintainers
+/.agent/            @your-org/core-maintainers
+

@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/your-org/repomentor/discussions
+    about: Ask technical questions, discuss architecture, or share project ideas with the community.
+  - name: Security Vulnerability Disclosure
+    url: https://github.com/your-org/repomentor/security/advisories/new
+    about: Privately report a security vulnerability to the maintainers.
+

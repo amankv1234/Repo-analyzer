@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@repomentor/shared": ["packages/shared/src/index.ts"],
+      "@repomentor/prompts": ["packages/prompts/src/index.ts"],
+      "@repomentor/core": ["packages/core/src/index.ts"],
+      "@repomentor/db": ["packages/db/src/index.ts"],
+      "@repomentor/shared/*": ["packages/shared/src/*"],
+      "@repomentor/prompts/*": ["packages/prompts/src/*"],
+      "@repomentor/core/*": ["packages/core/src/*"],
+      "@repomentor/db/*": ["packages/db/src/*"]
+    }
+  }
+}

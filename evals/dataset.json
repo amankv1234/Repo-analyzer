@@ -1,0 +1,75 @@
+[
+  {
+    "repoName": "facebook/react",
+    "primaryLanguage": "JavaScript",
+    "evaluations": [
+      {
+        "id": "react-q1",
+        "question": "Where is useState defined and what does it delegate to?",
+        "expectedSymbols": ["useState", "resolveDispatcher"],
+        "expectedFiles": ["packages/react/src/ReactHooks.js"],
+        "expectedFact": "useState calls resolveDispatcher().useState(initialState)"
+      },
+      {
+        "id": "react-q2",
+        "question": "How are Fiber nodes structured and what properties do they have?",
+        "expectedSymbols": ["createFiber", "FiberNode"],
+        "expectedFiles": ["packages/react-reconciler/src/ReactFiber.js"],
+        "expectedFact": "FiberNode defines tag, key, elementType, stateNode, return, child, sibling"
+      }
+    ]
+  },
+  {
+    "repoName": "fastify/fastify",
+    "primaryLanguage": "JavaScript",
+    "evaluations": [
+      {
+        "id": "fastify-q1",
+        "question": "How is route validation configured with JSON schemas?",
+        "expectedSymbols": ["route", "compileSchemasForRoute"],
+        "expectedFiles": ["lib/route.js"],
+        "expectedFact": "Schemas are compiled via Ajv into fast serialization functions"
+      }
+    ]
+  },
+  {
+    "repoName": "gin-gonic/gin",
+    "primaryLanguage": "Go",
+    "evaluations": [
+      {
+        "id": "gin-q1",
+        "question": "How does router group prefixing work in Gin?",
+        "expectedSymbols": ["RouterGroup", "Group"],
+        "expectedFiles": ["routergroup.go"],
+        "expectedFact": "RouterGroup calculates absolute path prefix and inherits middleware"
+      }
+    ]
+  },
+  {
+    "repoName": "tokio-rs/tokio",
+    "primaryLanguage": "Rust",
+    "evaluations": [
+      {
+        "id": "tokio-q1",
+        "question": "How does the multi-threaded work-stealing runtime schedule tasks?",
+        "expectedSymbols": ["Runtime", "schedule", "steal"],
+        "expectedFiles": ["tokio/src/runtime/scheduler/multi_thread/mod.rs"],
+        "expectedFact": "Workers maintain local queues and steal tasks from peers on starvation"
+      }
+    ]
+  },
+  {
+    "repoName": "tiangolo/fastapi",
+    "primaryLanguage": "Python",
+    "evaluations": [
+      {
+        "id": "fastapi-q1",
+        "question": "How are path operations registered with decorators?",
+        "expectedSymbols": ["FastAPI", "get", "post", "add_api_route"],
+        "expectedFiles": ["fastapi/applications.py", "fastapi/routing.py"],
+        "expectedFact": "Decorator wraps function into APIRoute with Pydantic request/response model validation"
+      }
+    ]
+  }
+]
+
