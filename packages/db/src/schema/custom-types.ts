@@ -15,7 +15,7 @@ export const vector = customType<{ data: number[]; driverData: string }>({
       try {
         return JSON.parse(value);
       } catch {
-        return value.replace(/[\[\]]/g, "").split(",").map(Number);
+        return value.replace(/[\][]/g, "").split(",").map(Number);
       }
     }
     return value;
@@ -30,4 +30,3 @@ export const tsvector = customType<{ data: string; driverData: string }>({
     return "tsvector";
   },
 });
-

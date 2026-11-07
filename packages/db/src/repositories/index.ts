@@ -50,11 +50,16 @@ export class RepoRepository {
   }
 
   async findById(id: string) {
-    return (await this.d.select().from(repositories).where(eq(repositories.id, id)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(repositories).where(eq(repositories.id, id)).limit(1))[0] ?? null
+    );
   }
 
   async findByUrl(url: string) {
-    return (await this.d.select().from(repositories).where(eq(repositories.url, url)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(repositories).where(eq(repositories.url, url)).limit(1))[0] ??
+      null
+    );
   }
 
   async create(data: NewRepository) {
@@ -94,7 +99,9 @@ export class ChunkRepository {
   }
 
   async findFileById(fileId: string) {
-    return (await this.d.select().from(repoFiles).where(eq(repoFiles.id, fileId)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(repoFiles).where(eq(repoFiles.id, fileId)).limit(1))[0] ?? null
+    );
   }
 
   async insertChunks(chunks: NewCodeChunk[]) {
@@ -103,11 +110,7 @@ export class ChunkRepository {
   }
 
   async findChunksByRepo(repoId: string, limit: number = 50) {
-    return this.d
-      .select()
-      .from(codeChunks)
-      .where(eq(codeChunks.repoId, repoId))
-      .limit(limit);
+    return this.d.select().from(codeChunks).where(eq(codeChunks.repoId, repoId)).limit(limit);
   }
 
   async searchVector(repoId: string, embedding: number[], limit = 25) {
@@ -133,7 +136,21 @@ export class ChunkRepository {
         LIMIT ${limit};
       `);
 
-      return (result.rows as any[]).map((row, idx) => ({
+      interface ChunkSearchRow {
+        id: string;
+        repoId: string;
+        fileId: string;
+        filePath: string;
+        startLine: number;
+        endLine: number;
+        symbolName: string | null;
+        symbolType: string | null;
+        content: string;
+        distance?: number;
+        rank_score?: number;
+      }
+
+      return (result.rows as unknown as ChunkSearchRow[]).map((row, idx) => ({
         id: row.id,
         rank: idx + 1,
         chunk: {
@@ -177,7 +194,21 @@ export class ChunkRepository {
         LIMIT ${limit};
       `);
 
-      return (result.rows as any[]).map((row, idx) => ({
+      interface ChunkSearchRow {
+        id: string;
+        repoId: string;
+        fileId: string;
+        filePath: string;
+        startLine: number;
+        endLine: number;
+        symbolName: string | null;
+        symbolType: string | null;
+        content: string;
+        distance?: number;
+        rank_score?: number;
+      }
+
+      return (result.rows as unknown as ChunkSearchRow[]).map((row, idx) => ({
         id: row.id,
         rank: idx + 1,
         chunk: {
@@ -230,11 +261,18 @@ export class ConversationRepository {
   }
 
   async findById(id: string) {
-    return (await this.d.select().from(conversations).where(eq(conversations.id, id)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(conversations).where(eq(conversations.id, id)).limit(1))[0] ??
+      null
+    );
   }
 
   async listByRepo(repoId: string) {
-    return this.d.select().from(conversations).where(eq(conversations.repoId, repoId)).orderBy(desc(conversations.updatedAt));
+    return this.d
+      .select()
+      .from(conversations)
+      .where(eq(conversations.repoId, repoId))
+      .orderBy(desc(conversations.updatedAt));
   }
 
   async addMessage(data: NewMessage) {
@@ -271,7 +309,10 @@ export class MemoryRepository {
   }
 
   async findById(id: string) {
-    return (await this.d.select().from(memoryRecords).where(eq(memoryRecords.id, id)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(memoryRecords).where(eq(memoryRecords.id, id)).limit(1))[0] ??
+      null
+    );
   }
 
   async findLatestMemory(userId: string, repoId: string) {
@@ -308,7 +349,10 @@ export class MemoryRepository {
   }
 
   async delete(id: string) {
-    const [deleted] = await this.d.delete(memoryRecords).where(eq(memoryRecords.id, id)).returning();
+    const [deleted] = await this.d
+      .delete(memoryRecords)
+      .where(eq(memoryRecords.id, id))
+      .returning();
     return deleted ?? null;
   }
 }
@@ -322,7 +366,9 @@ export class JobRepository {
   }
 
   async findById(id: string) {
-    return (await this.d.select().from(indexingJobs).where(eq(indexingJobs.id, id)).limit(1))[0] ?? null;
+    return (
+      (await this.d.select().from(indexingJobs).where(eq(indexingJobs.id, id)).limit(1))[0] ?? null
+    );
   }
 
   async findLatestByRepo(repoId: string) {

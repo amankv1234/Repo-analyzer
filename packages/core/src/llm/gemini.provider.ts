@@ -19,10 +19,7 @@ export class GeminiProvider implements LLMProvider {
 
   constructor(options: GeminiProviderOptions = {}) {
     this.apiKey = options.apiKey || process.env.GEMINI_API_KEY || "";
-    this.defaultModel =
-      options.defaultModel ||
-      process.env.GEMINI_MODEL ||
-      "gemini-1.5-flash";
+    this.defaultModel = options.defaultModel || process.env.GEMINI_MODEL || "gemini-3.8-flash";
     this.timeoutMs = options.timeoutMs ?? 60_000;
   }
 
@@ -75,7 +72,17 @@ export class GeminiProvider implements LLMProvider {
         throw new Error(`Gemini API error (${res.status}): ${errorBody}`);
       }
 
-      const data: any = await res.json();
+      interface GeminiResponsePayload {
+        candidates?: Array<{
+          content?: {
+            parts?: Array<{
+              text?: string;
+            }>;
+          };
+        }>;
+      }
+
+      const data = (await res.json()) as GeminiResponsePayload;
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       return text || "";
     } catch (error) {
@@ -146,9 +153,13 @@ export class GeminiProvider implements LLMProvider {
       const decoder = new TextDecoder();
       let buffer = "";
 
-      while (true) {
+      let isReading = true;
+      while (isReading) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          isReading = false;
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
@@ -182,4 +193,3 @@ export class GeminiProvider implements LLMProvider {
     }
   }
 }
-

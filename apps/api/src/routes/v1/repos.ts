@@ -10,6 +10,9 @@ import {
   MemoryRecordSchema,
   UpdateMemoryRequestSchema,
   ErrorResponseSchema,
+  RepoStatus,
+  RepoOverviewSections,
+  MemoryType,
 } from "@repomentor/shared";
 import {
   RepoRepository,
@@ -18,6 +21,7 @@ import {
   ChunkRepository,
   MemoryRepository,
 } from "@repomentor/db";
+import { runIndexingDirectly } from "../../services/indexing-runner";
 
 export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
   const repoRepo = new RepoRepository();
@@ -67,11 +71,41 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
         currentStep: "queued",
       });
 
+      let queuedInBullMQ = false;
+      if (fastify.indexingQueue) {
+        try {
+          await fastify.indexingQueue.add("index", {
+            jobId: job.id,
+            repoId: repo.id,
+            url,
+            branch: branch || repo.defaultBranch,
+          });
+          queuedInBullMQ = true;
+        } catch (queueErr) {
+          request.log.warn(
+            { err: queueErr },
+            "Failed to push indexing job to BullMQ queue, using fallback"
+          );
+        }
+      }
+
+      if (!queuedInBullMQ) {
+        runIndexingDirectly({
+          jobId: job.id,
+          repoId: repo.id,
+          url,
+          branch: branch || repo.defaultBranch,
+        }).catch((err) => {
+          request.log.error({ err, jobId: job.id }, "Direct background indexing failed");
+        });
+      }
+
       return reply.status(202).send({
         repoId: repo.id,
         jobId: job.id,
         status: "queued",
-        message: "Repository queued for indexing. Track progress via /api/v1/jobs/:id or /api/v1/repos/:id/status",
+        message:
+          "Repository queued for indexing. Track progress via /api/v1/jobs/:id or /api/v1/repos/:id/status",
       });
     }
   );
@@ -89,22 +123,27 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (_request, reply) => {
-      const repos = await repoRepo.listAll();
-      return reply.status(200).send(
-        repos.map((r) => ({
-          id: r.id,
-          url: r.url,
-          owner: r.owner,
-          name: r.name,
-          defaultBranch: r.defaultBranch,
-          lastIndexedCommit: r.lastIndexedCommit,
-          status: r.status as any,
-          size: r.size,
-          languages: r.languages,
-          createdAt: r.createdAt.toISOString(),
-          updatedAt: r.updatedAt.toISOString(),
-        }))
-      );
+      try {
+        const repos = await repoRepo.listAll();
+        return reply.status(200).send(
+          repos.map((r) => ({
+            id: r.id,
+            url: r.url,
+            owner: r.owner,
+            name: r.name,
+            defaultBranch: r.defaultBranch,
+            lastIndexedCommit: r.lastIndexedCommit,
+            status: r.status as RepoStatus,
+            size: r.size,
+            languages: r.languages,
+            createdAt: r.createdAt.toISOString(),
+            updatedAt: r.updatedAt.toISOString(),
+          }))
+        );
+      } catch (err) {
+        _request.log.warn({ err }, "Database not reachable or empty; returning empty repo list");
+        return reply.status(200).send([]);
+      }
     }
   );
 
@@ -139,7 +178,7 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
         name: repo.name,
         defaultBranch: repo.defaultBranch,
         lastIndexedCommit: repo.lastIndexedCommit,
-        status: repo.status as any,
+        status: repo.status as RepoStatus,
         size: repo.size,
         languages: repo.languages,
         createdAt: repo.createdAt.toISOString(),
@@ -176,7 +215,7 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
         repoId: overview.repoId,
         version: overview.version,
         generatedAt: overview.generatedAt.toISOString(),
-        sections: overview.sections as any,
+        sections: overview.sections as RepoOverviewSections,
       });
     }
   );
@@ -248,6 +287,35 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
         progress: 0,
         currentStep: "reindexing_diff",
       });
+
+      let queuedInBullMQ = false;
+      if (fastify.indexingQueue) {
+        try {
+          await fastify.indexingQueue.add("index", {
+            jobId: job.id,
+            repoId: repo.id,
+            url: repo.url,
+            branch: repo.defaultBranch,
+          });
+          queuedInBullMQ = true;
+        } catch (queueErr) {
+          request.log.warn(
+            { err: queueErr },
+            "Failed to push refresh job to BullMQ queue, using fallback"
+          );
+        }
+      }
+
+      if (!queuedInBullMQ) {
+        runIndexingDirectly({
+          jobId: job.id,
+          repoId: repo.id,
+          url: repo.url,
+          branch: repo.defaultBranch,
+        }).catch((err) => {
+          request.log.error({ err, jobId: job.id }, "Direct background refresh indexing failed");
+        });
+      }
 
       return reply.status(202).send({
         repoId: repo.id,
@@ -380,7 +448,7 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
           id: r.id,
           userId: r.userId,
           repoId: r.repoId,
-          type: r.type as any,
+          type: r.type as MemoryType,
           summary: r.summary,
           metadata: r.metadata as Record<string, unknown>,
           createdAt: r.createdAt.toISOString(),
@@ -419,7 +487,7 @@ export const repoRoutes: FastifyPluginAsyncZod = async (fastify) => {
         id: updated.id,
         userId: updated.userId,
         repoId: updated.repoId,
-        type: updated.type as any,
+        type: updated.type as MemoryType,
         summary: updated.summary,
         metadata: updated.metadata as Record<string, unknown>,
         createdAt: updated.createdAt.toISOString(),

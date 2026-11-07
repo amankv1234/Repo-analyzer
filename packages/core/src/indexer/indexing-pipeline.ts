@@ -3,6 +3,7 @@ import {
   IndexingPipelineOptions,
   IndexingResult,
 } from "./indexing-pipeline.interface";
+import { JobStep } from "@repomentor/shared";
 import { parseGitHubUrl } from "../ingestion/github-url";
 import { fetchGitHubMetadata } from "../ingestion/metadata";
 import { cloneShallow, cleanupClonedRepo } from "../ingestion/git-cloner";
@@ -29,7 +30,7 @@ export class RobustIndexingPipeline implements IndexingPipeline {
   async execute(options: IndexingPipelineOptions): Promise<IndexingResult> {
     const { repoId, repoUrl, branch, onProgress } = options;
 
-    const report = async (step: any, percent: number, message?: string) => {
+    const report = async (step: JobStep, percent: number, message?: string) => {
       if (onProgress) {
         await onProgress({ step, progressPercent: percent, message });
       }
@@ -104,7 +105,11 @@ export class RobustIndexingPipeline implements IndexingPipeline {
       }
 
       // 6. Batch Embeddings with Content Hashing Cache
-      await report("generating_embeddings", 75, `Generating vector embeddings for ${allChunks.length} chunks`);
+      await report(
+        "generating_embeddings",
+        75,
+        `Generating vector embeddings for ${allChunks.length} chunks`
+      );
       const textsToEmbed: string[] = [];
       const textsIndices: number[] = [];
 
@@ -127,7 +132,11 @@ export class RobustIndexingPipeline implements IndexingPipeline {
       }
 
       // 7. Synthesize Onboarding Report via LLM
-      await report("synthesizing_overview", 90, "Synthesizing 7-section Contributor Onboarding Report");
+      await report(
+        "synthesizing_overview",
+        90,
+        "Synthesizing 7-section Contributor Onboarding Report"
+      );
       const overviewGenerator = new OverviewGenerator(this.deps.llm);
       const overview = await overviewGenerator.generateOverview({
         owner: parsed.owner,
@@ -152,4 +161,3 @@ export class RobustIndexingPipeline implements IndexingPipeline {
     }
   }
 }
-

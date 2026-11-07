@@ -33,17 +33,29 @@ export async function findGoodFirstIssues(
       return [];
     }
 
-    const data: any = await res.json();
+    interface GitHubIssueItem {
+      id: number;
+      number: number;
+      title: string;
+      html_url: string;
+      pull_request?: unknown;
+      labels?: Array<{ name: string }>;
+      body?: string | null;
+      created_at: string;
+    }
+
+    const data = (await res.json()) as unknown;
     if (!Array.isArray(data)) return [];
 
-    return data
-      .filter((issue: any) => !issue.pull_request) // filter out PRs
-      .map((issue: any) => ({
+    const issues = data as GitHubIssueItem[];
+    return issues
+      .filter((issue) => !issue.pull_request) // filter out PRs
+      .map((issue) => ({
         id: issue.id,
         number: issue.number,
         title: issue.title,
         url: issue.html_url,
-        labels: (issue.labels || []).map((l: any) => l.name),
+        labels: (issue.labels || []).map((l) => l.name),
         bodySnippet: (issue.body || "").slice(0, 200),
         createdAt: issue.created_at,
       }));
@@ -51,4 +63,3 @@ export async function findGoodFirstIssues(
     return [];
   }
 }
-

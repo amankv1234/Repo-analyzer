@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { JobStatusResponseSchema, ErrorResponseSchema } from "@repomentor/shared";
+import { JobStatusResponseSchema, ErrorResponseSchema, JobStatus } from "@repomentor/shared";
 import { JobRepository } from "@repomentor/db";
 
 export const jobRoutes: FastifyPluginAsyncZod = async (fastify) => {
@@ -32,7 +32,7 @@ export const jobRoutes: FastifyPluginAsyncZod = async (fastify) => {
       return reply.status(200).send({
         id: job.id,
         repoId: job.repoId,
-        status: job.status as any,
+        status: job.status as JobStatus,
         progress: job.progress,
         currentStep: job.currentStep,
         error: job.error,
@@ -42,4 +42,3 @@ export const jobRoutes: FastifyPluginAsyncZod = async (fastify) => {
     }
   );
 };
-

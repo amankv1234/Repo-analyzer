@@ -27,7 +27,9 @@ const securityPluginCallback: FastifyPluginAsync = async (fastify) => {
         process.env.APP_URL,
       ].filter(Boolean);
 
-      const isAllowed = allowedOrigins.some((allowed) => allowed && origin.startsWith(allowed));
+      const isAllowed =
+        (process.env.NODE_ENV !== "production" && /^http:\/\/localhost(:\d+)?$/.test(origin)) ||
+        allowedOrigins.some((allowed) => allowed && origin.startsWith(allowed));
       if (!isAllowed) {
         return reply.status(403).send({
           title: "Forbidden",
@@ -40,4 +42,3 @@ const securityPluginCallback: FastifyPluginAsync = async (fastify) => {
 };
 
 export default fp(securityPluginCallback, { name: "security-plugin" });
-

@@ -5,6 +5,9 @@ import {
   MessageResponseSchema,
   EnhancementRequestSchema,
   ErrorResponseSchema,
+  CodeCitation,
+  MessageRole,
+  RepoOverviewSections,
 } from "@repomentor/shared";
 import {
   ConversationRepository,
@@ -35,18 +38,26 @@ export const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
   const chunkRepo = new ChunkRepository();
   const memoryRepo = new MemoryRepository();
 
-  // Choose providers based on environment (Gemini -> Anthropic -> Mock fallback)
+  // Choose providers based on environment (Test -> Gemini -> Anthropic -> Mock fallback)
   const llm =
-    process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes("placeholder")
-      ? new GeminiProvider()
-      : process.env.LLM_PROVIDER === "anthropic" && process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.includes("dummy")
-        ? new AnthropicClaudeProvider()
-        : new MockLLMProvider();
+    process.env.NODE_ENV === "test"
+      ? new MockLLMProvider()
+      : process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes("placeholder")
+        ? new GeminiProvider()
+        : process.env.LLM_PROVIDER === "anthropic" &&
+            process.env.ANTHROPIC_API_KEY &&
+            !process.env.ANTHROPIC_API_KEY.includes("dummy")
+          ? new AnthropicClaudeProvider()
+          : new MockLLMProvider();
 
   const embedder =
-    process.env.EMBEDDING_PROVIDER === "voyage" && process.env.VOYAGE_API_KEY && !process.env.VOYAGE_API_KEY.includes("dummy")
-      ? new VoyageAIEmbeddingProvider()
-      : new MockEmbeddingProvider();
+    process.env.NODE_ENV === "test"
+      ? new MockEmbeddingProvider()
+      : process.env.EMBEDDING_PROVIDER === "voyage" &&
+          process.env.VOYAGE_API_KEY &&
+          !process.env.VOYAGE_API_KEY.includes("dummy")
+        ? new VoyageAIEmbeddingProvider()
+        : new MockEmbeddingProvider();
 
   const hybridRetriever = new CodeHybridRetriever(embedder, {
     searchVector: (repoId, emb, limit) => chunkRepo.searchVector(repoId, emb, limit),
@@ -120,7 +131,8 @@ export const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
 
       // 6. Memory layer fetch
       const overview = await overviewRepo.findLatestByRepo(repoId);
-      const overviewSummary = (overview?.sections as any)?.summary || repo.name;
+      const overviewSummary =
+        (overview?.sections as RepoOverviewSections | null)?.summary || repo.name;
       const userId = request.user?.id || "00000000-0000-0000-0000-000000000001";
       const userMemory = await memoryRepo.findLatestMemory(userId, repoId);
 
@@ -236,9 +248,9 @@ export const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
         messages.map((m) => ({
           id: m.id,
           conversationId: m.conversationId,
-          role: m.role as any,
+          role: m.role as MessageRole,
           content: m.content,
-          citations: m.citations as any,
+          citations: (m.citations ?? []) as CodeCitation[],
           createdAt: m.createdAt.toISOString(),
         }))
       );

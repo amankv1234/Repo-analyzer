@@ -1,8 +1,11 @@
 import { z } from "zod";
 import dotenv from "dotenv";
+import path from "path";
 
-// Load .env into process.env before validation
+// Load .env from process.cwd() or monorepo root
 dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -67,4 +70,3 @@ export function getEnv(): Env {
 }
 
 export const env = getEnv();
-

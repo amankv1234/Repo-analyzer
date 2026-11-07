@@ -1,9 +1,5 @@
 import fastify, { FastifyInstance } from "fastify";
-import {
-  serializerCompiler,
-  validatorCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
 import { randomUUID } from "crypto";
 import { ZodError } from "zod";
 import { AppError } from "@repomentor/shared";
@@ -15,6 +11,7 @@ import securityPlugin from "./plugins/security";
 import costGuardPlugin from "./plugins/cost-guard";
 import requestIdPlugin from "./plugins/request-id";
 import metricsPlugin from "./plugins/metrics";
+import queuePlugin from "./plugins/queue";
 import { healthRoutes } from "./routes/health";
 import { repoRoutes } from "./routes/v1/repos";
 import { jobRoutes } from "./routes/v1/jobs";
@@ -54,6 +51,7 @@ export function buildApp(): FastifyInstance {
   app.register(rateLimitPlugin);
   app.register(costGuardPlugin);
   app.register(metricsPlugin);
+  app.register(queuePlugin);
 
   // Register Routes
   app.register(healthRoutes);
