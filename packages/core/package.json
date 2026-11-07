@@ -14,7 +14,7 @@
     "@octokit/rest": "^20.1.1",
     "@repomentor/prompts": "workspace:*",
     "@repomentor/shared": "workspace:*",
-    "ignore": "^5.3.2",
+    "ignore": "^7.0.14",
     "simple-git": "^3.25.0",
     "web-tree-sitter": "^0.22.6",
     "zod": "^3.23.8"
