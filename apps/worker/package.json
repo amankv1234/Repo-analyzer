@@ -20,10 +20,10 @@
     "pino": "^9.3.2"
   },
   "devDependencies": {
-    "@types/node": "^22.5.0",
+    "@types/node": "^26.6.6",
     "pino-pretty": "^11.2.2",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
+    "vitest": "^5.1.0"
   }
 }
